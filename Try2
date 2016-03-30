@@ -70,13 +70,15 @@ void loop(){
 }
 
 void printLetter() {
-  for (int letter = 0; letter < 5; letter++){
-    for (int rows = 0; rows < 8; rows++){
-      for (int cols = 0; cols < 8; cols++){
-        digitalWrite(row[rows], HIGH);
-        digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
-        digitalWrite(row[rows], LOW);
-        digitalWrite(col[cols], HIGH);
+  for (int letter = 0; letter < 5; letter++){   //change displayed letter
+    for (int timer = 0; timer < 1000; timer++){ //play each letter for 1 second
+      for (int rows = 0; rows < 8; rows++){
+        for (int cols = 0; cols < 8; cols++){
+          digitalWrite(row[rows], HIGH);
+          digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
+          digitalWrite(row[rows], LOW);
+          digitalWrite(col[cols], HIGH);
+        }
       }
     }
   }
