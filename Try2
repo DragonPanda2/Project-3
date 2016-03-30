@@ -1,0 +1,83 @@
+//The rows and columns of the 8x8 LED matrix
+const int row[8] = {10, 18, 9, 13, 2, 8, 3, 6};
+const int col[8] = {19, 4, 5, 11, 7, 12, 17, 16};
+
+//Letters that will form the title screen of SNAKE
+int titleScreen[5][8][8] = {
+{ 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 0, 0, 0, 1, 0, 0}, 
+{0, 0, 0, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}},
+{
+{0, 1, 0, 0, 0, 0, 1, 0}, 
+{0, 1, 1, 0, 0, 0, 1, 0}, 
+{0, 1, 1, 0, 0, 0, 1, 0}, 
+{0, 1, 0, 1, 0, 0, 1, 0}, 
+{0, 1, 0, 0, 1, 0, 1, 0}, 
+{0, 1, 0, 0, 0, 1, 1, 0}, 
+{0, 1, 0, 0, 0, 1, 1, 0}, 
+{0, 1, 0, 0, 0, 0, 1, 0}},
+{
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{ 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 0, 0, 0}, 
+{0, 0, 1, 1, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 1, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{ 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}}};
+
+void setup() {
+  Serial.begin(9600);
+
+  //set up all the pins
+  for (int pin = 0; pin < 8; pin++){
+    pinMode(row[pin], OUTPUT);
+    pinMode(col[pin], OUTPUT);
+
+    //turn all LEDs off
+    digitalWrite(row[pin], LOW);
+    digitalWrite(col[pin], LOW);
+  }
+
+}
+
+void loop(){
+  printLetter();
+}
+
+void printLetter() {
+  for (int letter = 0; letter < 5; letter++){
+    for (int rows = 0; rows < 8; rows++){
+      for (int cols = 0; cols < 8; cols++){
+        digitalWrite(row[rows], HIGH);
+        digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
+        digitalWrite(row[rows], LOW);
+        digitalWrite(col[cols], HIGH);
+      }
+    }
+  }
+}
