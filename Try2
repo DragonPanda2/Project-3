@@ -14,14 +14,14 @@ int titleScreen[5][8][8] = {
 {0, 0, 1, 0, 0, 1, 0, 0}, 
 {0, 0, 1, 1, 1, 1, 0, 0}},
 {
-{0, 1, 0, 0, 0, 0, 1, 0}, 
-{0, 1, 1, 0, 0, 0, 1, 0}, 
-{0, 1, 1, 0, 0, 0, 1, 0}, 
-{0, 1, 0, 1, 0, 0, 1, 0}, 
-{0, 1, 0, 0, 1, 0, 1, 0}, 
-{0, 1, 0, 0, 0, 1, 1, 0}, 
-{0, 1, 0, 0, 0, 1, 1, 0}, 
-{0, 1, 0, 0, 0, 0, 1, 0}},
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
 {
 {0, 0, 1, 1, 1, 1, 0, 0}, 
 {0, 0, 1, 0, 0, 1, 0, 0}, 
@@ -50,6 +50,14 @@ int titleScreen[5][8][8] = {
 {0, 0, 1, 0, 0, 0, 0, 0}, 
 {0, 0, 1, 1, 1, 1, 0, 0}}};
 
+int startButton = 0;
+int gameState = 0;  //0 = start screen, 1 = game, 2 = game over
+
+int snakex[64] = 3;
+int snakey[64] = 3;
+
+int snakeSize = 1;
+
 void setup() {
   Serial.begin(9600);
 
@@ -63,23 +71,48 @@ void setup() {
     digitalWrite(col[pin], LOW);
   }
 
+  pinMode(startButton, INPUT_PULLUP);
 }
 
-void loop(){
-  printLetter();
-}
 
-void printLetter() {
+void loop() {
   for (int letter = 0; letter < 5; letter++){   //change displayed letter
-    for (int timer = 0; timer < 1000; timer++){ //play each letter for 1 second
-      for (int rows = 0; rows < 8; rows++){
-        for (int cols = 0; cols < 8; cols++){
-          digitalWrite(row[rows], HIGH);
-          digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
-          digitalWrite(row[rows], LOW);
-          digitalWrite(col[cols], HIGH);
-        }
+    for (int timer = 0; timer < 400; timer++){  //play each letter for 1 second
+      if (gameState == 0) {                     //if on the title screen
+        printLetter(letter);                    //show the letters of SNAKE
       }
+    }
+    
+  }
+}
+
+void printLetter(int letter) {
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      if (gameState == 0){                      //if the game hasn't started
+        digitalWrite(row[rows], HIGH);          //show the letters
+        digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
+        digitalWrite(row[rows], LOW);
+        digitalWrite(col[cols], HIGH);
+
+        checkStartGameP1();                     //see if the button has been pressed
+      }
+    }
+  }
+}
+
+void checkStartGameP1(){
+  if (digitalRead(startButton) == LOW){         //Check when the button has been pressed
+    if (gameState == 0){                        //On the title screen
+      gameState = 1;                            //  Makes the game start
+    }
+  }
+}
+
+void generateSnake(){
+  for (int rows = 0; rows < snakeSize; rows++){
+    for (int cols = 0; cols < snakeSize; cols++){
+
     }
   }
 }
