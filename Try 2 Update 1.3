@@ -1,0 +1,285 @@
+//The rows and columns of the 8x8 LED matrix
+const int row[8] = {10, 18, 9, 13, 2, 8, 3, 6};
+const int col[8] = {19, 4, 5, 11, 7, 12, 17, 16};
+
+//Letters that will form the title screen of SNAKE
+int titleScreen[5][8][8] = {
+{ 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 0, 0, 0, 1, 0, 0}, 
+{0, 0, 0, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}},
+{
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{ 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 0, 0, 0}, 
+{0, 0, 1, 1, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 1, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{ 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}}};
+
+int startButton = 0;
+int gameState = 1;  //0 = start screen, 1 = game, 2 = game over
+
+int snakex = 3;
+int snakey = 2;   //Where (0, 0) is top left corner
+
+int prevCoord[64][2];
+
+int gameScreen[8][8]{
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+int snakeSize = 5;
+
+void setup() {
+  Serial.begin(9600);
+
+  //set up all the pins
+  for (int pin = 0; pin < 8; pin++){
+    pinMode(row[pin], OUTPUT);
+    pinMode(col[pin], OUTPUT);
+
+    //turn all LEDs off
+    digitalWrite(row[pin], LOW);
+    digitalWrite(col[pin], LOW);
+  }
+
+  pinMode(startButton, INPUT_PULLUP);
+
+  for (int a; a < 64; a++){
+    prevCoord[a][1] = -1;
+    prevCoord[a][2] = -1;
+  }
+}
+
+
+void loop() {
+  for (int letter = 0; letter < 5; letter++){   //change displayed letter
+    varTest();
+    for (int refreshRate = 0; refreshRate < 200; refreshRate++){  //refresh the game every 400 milliseconds
+      if (gameState == 0) {                     //if on the title screen
+        printLetter(letter);                    //show the letters of SNAKE
+      }
+
+      if (gameState == 1) {
+        //generateSnake();
+        
+        generation3();
+      }
+    }
+    //if (gameState == 1){
+    //varTest();
+    varUpdate();
+    //}
+
+    while(!Serial);
+    for (int x = 0; x < 10; x++){
+      Serial.println(prevCoord[x][1]);
+      Serial.println(prevCoord[x][2]);
+    }
+  }
+}
+
+void printLetter(int letter) {
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      if (gameState == 0){                      //if the game hasn't started
+        digitalWrite(row[rows], HIGH);          //show the letters
+        digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
+        digitalWrite(row[rows], LOW);
+        digitalWrite(col[cols], HIGH);
+
+        checkStartGameP1();                     //see if the button has been pressed
+      }
+    }
+  }
+}
+
+void checkStartGameP1(){
+  if (digitalRead(startButton) == LOW){         //Check when the button has been pressed
+    //if (gameState == 0){                        //On the title screen
+      gameState = 1;                            //  Makes the game start
+    //}
+  }
+}
+void varUpdate2(){
+    for (int x = 10; x < 1; x = x - 1){
+    prevCoord[x][1] = prevCoord[x - 1][1];
+    prevCoord[x][2] = prevCoord[x - 1][2];
+  }
+  prevCoord[0][1] = snakex;
+  prevCoord[0][2] = snakey;
+  for (int lnth = 0; lnth < 10; lnth++){
+    //if (lnth < (snakeSize - 1)){
+      gameScreen[prevCoord[lnth][1]][prevCoord[lnth][2]] = 1;
+    //}
+    //gameScreen[prevCoord[snakeSize + lnth][1]][prevCoord[snakeSize + lnth][2]] = 0;   
+  }
+
+}
+void varUpdate(){
+  prevCoord[10][1] = prevCoord[9][1];
+  prevCoord[10][2] = prevCoord[9][2];
+  
+  prevCoord[9][1] = prevCoord[8][1];
+  prevCoord[9][2] = prevCoord[8][2];
+
+  prevCoord[8][1] = prevCoord[7][1];
+  prevCoord[8][2] = prevCoord[7][2];
+
+  prevCoord[7][1] = prevCoord[6][1];
+  prevCoord[7][2] = prevCoord[6][2];
+
+  prevCoord[6][1] = prevCoord[5][1];
+  prevCoord[6][2] = prevCoord[5][2];
+
+  prevCoord[5][1] = prevCoord[4][1];
+  prevCoord[5][2] = prevCoord[4][2];
+
+  prevCoord[4][1] = prevCoord[3][1];
+  prevCoord[4][2] = prevCoord[3][2];
+
+  prevCoord[3][1] = prevCoord[2][1];
+  prevCoord[3][2] = prevCoord[2][2];
+
+  prevCoord[2][1] = prevCoord[1][1];
+  prevCoord[2][2] = prevCoord[1][2];
+
+  prevCoord[1][1] = prevCoord[0][1];
+  prevCoord[1][2] = prevCoord[0][2];
+
+  prevCoord[0][1] = snakex;
+  prevCoord[0][2] = snakey;
+
+  gameScreen[prevCoord[0][1]][prevCoord[0][2]] = 1;
+  gameScreen[prevCoord[1][1]][prevCoord[1][2]] = 1;
+  gameScreen[prevCoord[2][1]][prevCoord[2][2]] = 1;
+  gameScreen[prevCoord[3][1]][prevCoord[3][2]] = 1;
+  gameScreen[prevCoord[4][1]][prevCoord[4][2]] = 1;
+  gameScreen[prevCoord[5][1]][prevCoord[5][2]] = 1;
+  gameScreen[prevCoord[6][1]][prevCoord[6][2]] = 0;
+  gameScreen[prevCoord[7][1]][prevCoord[7][2]] = 0;
+  gameScreen[prevCoord[8][1]][prevCoord[8][2]] = 0;
+  gameScreen[prevCoord[9][1]][prevCoord[9][2]] = 0;
+  gameScreen[prevCoord[10][1]][prevCoord[10][2]] = 0;
+}
+
+void generation3(){
+  
+
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      digitalWrite(row[rows], HIGH);
+      digitalWrite(col[cols], !(gameScreen[rows][cols]));
+      digitalWrite(row[rows], LOW);
+      digitalWrite(col[cols], HIGH);
+    }
+  }
+}
+void generation2(){
+
+  for (int x = 10; x < 1; x--){
+    prevCoord[x][1] = prevCoord[x - 1][1];
+    prevCoord[x][2] = prevCoord[x - 1][2];
+  }
+  prevCoord[0][1] = snakex;
+  prevCoord[0][2] = snakey;
+  for (int lnth = 0; lnth < 64; lnth++){
+    if (lnth < (snakeSize - 1)){
+      gameScreen[prevCoord[lnth][1]][prevCoord[lnth][2]] = 1;
+    }
+    gameScreen[prevCoord[snakeSize + lnth][1]][prevCoord[snakeSize + lnth][2]] = 0;   
+  }
+
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      digitalWrite(row[rows], HIGH);
+      digitalWrite(col[cols], !(gameScreen[rows][cols]));
+      digitalWrite(row[rows], LOW);
+      digitalWrite(col[cols], HIGH);
+    }
+  }
+}
+
+
+void generateSnake(){
+  //gameScreen[snakex][snakey] = 1;
+  prevCoord[0][1] = snakex;
+  prevCoord[0][2] = snakey;
+  for (int refresh = 64; refresh > 0; refresh--){
+    prevCoord[refresh][1] = prevCoord[refresh - 1][1];
+    prevCoord[refresh][2] = prevCoord[refresh - 1][2];
+    if (refresh > snakeSize){
+      prevCoord[refresh][1] = 0;
+      prevCoord[refresh][2] = 0;
+    }
+    //prevCoord[snakeSize + 1][1] = 0;
+    //prevCoord[snakeSize + 1][2] = 0;
+  }
+  for (int snakeMove = 0; snakeMove < 64; snakeMove++){
+    gameScreen[prevCoord[snakeMove][1]][prevCoord[snakeMove][2]] = 1;
+    gameScreen[prevCoord[snakeMove + 1][1]][prevCoord[snakeMove + 1][2]] = 0;
+  }
+
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      digitalWrite(row[rows], HIGH);
+      digitalWrite(col[cols], !(gameScreen[rows][cols]));
+      digitalWrite(row[rows], LOW);
+      digitalWrite(col[cols], HIGH);
+    }
+  }
+}
+
+void varTest(){
+  if (snakex < 7){
+    snakex++;
+  }else{
+    snakex = 0;
+    if (snakey < 7){
+      snakey++;
+    }else{
+      snakey = 0;
+    };
+  };
+}
