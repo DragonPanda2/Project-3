@@ -71,6 +71,8 @@ int gameScreen[8][8]{
 };
 
 int snakeSize = 3;
+bool dirChangeLeft = false;
+bool dirChangeRight = false;
 int snakeDir = 1; //0 = up, 1 = right, 2 = down, 3 = left
 
 void setup() {
@@ -216,19 +218,36 @@ void snakeMovement(){
   }
 }
 
+void dirChangePress(){
+  if (digitalRead(rightButton) == LOW){
+    dirChangeRight = true;
+    dirChangeLeft = false;
+  }
+  if (digitalRead(leftButton) == LOW){
+    dirChangeLeft = true;
+    
+  }
+}
+
 void changeDir(){
   if (digitalRead(rightButton) == LOW){
-    if (snakeDir < 3){
-      snakeDir++;
-    }else{
-      snakeDir = 0;
+    if (dirChangeRight == true){
+      if (snakeDir < 3){
+        snakeDir++;
+      }else{
+        snakeDir = 0;
+      }
+      dirChangeRight = false;
     }
   }
   if (digitalRead(leftButton) == LOW){
-    if (snakeDir > 0){
-      snakeDir--;
-    }else{
+    if (dirChangeLeft == true){
+      if (snakeDir > 0){
+        snakeDir--;
+      }else{
       snakeDir = 3;
+      }
+      dirChangeLeft = false;
     }
   }
 }
