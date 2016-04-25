@@ -76,6 +76,12 @@ bool dirChangeRight = false;
 int dirChangeDelay = 200;
 int snakeDir = 1; //0 = up, 1 = right, 2 = down, 3 = left
 
+int pelletx;
+int pellety;
+bool pelletGood;
+
+bool initPellet = true;
+
 void setup() {
   //Serial.begin(9600);
 
@@ -112,6 +118,10 @@ void loop() {
         printLetter(letter);                    //show the letters of SNAKE
       }else{
         if (gameState == 1) {
+          if (initPellet == true){
+            generatePellet();
+            initPellet = false;
+          }
           dirChangePress(); //buttons will make snake change direction
           generateSnake();  //snake will be printed on the game screen
           //varTest();
@@ -198,14 +208,14 @@ void snakeMovement(){
     }
   }
   if (snakeDir == 1){ //if the snake is going right
-    if (snakey <= 7){
+    if (snakey < 8){
       snakey++;
     }else{
       gameState = 2;
     }
   }
   if (snakeDir == 2){ //if the snake is going down
-    if (snakex <= 7){
+    if (snakex < 8){
       snakex++;
     }else{
       gameState = 2;
@@ -256,6 +266,37 @@ void changeDir(){
     }
 }
 
+void generatePellet(){
+  pelletx = random(8);
+  pellety = random(8);
+  for (int d = 0; d < 64; d++){
+    if (prevCoord[d][1] == pelletx){
+      if (prevCoord[d][2] == pellety){
+        pelletGood = false;
+      }else{
+        pelletGood = true;
+      }
+    }else{
+      pelletGood = true;
+    }
+  }
+  if (pelletGood == false){
+    generatePellet();
+  }else{
+    gameScreen[pelletx][pellety] = 1;
+  }
+}
+
+void pickUpPellet(){
+  for (int e = 0; e < 64; e++){
+    if (prevCoord[e][1] == pelletx){
+      if (prevCoord[e][2] == pellety){
+        snakeSize++;
+        generatePellet();
+      }
+    }
+  }
+}
 /*-----------*
  *UNUSED CODE*
  *-----------*/
