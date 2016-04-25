@@ -119,7 +119,7 @@ void loop() {
       }else{
         if (gameState == 1) {
           if (initPellet == true){
-            generatePellet();
+            //generatePellet();
             initPellet = false;
           }
           pickUpPellet();
@@ -160,11 +160,13 @@ void checkStartGameP1(){
   if (digitalRead(leftButton) == LOW){          //Check when the button has been pressed
     if (gameState == 0){                        //On the title screen
       gameState = 1;                            //  Makes the game start
+      generatePellet();
     }
   }
   if (digitalRead(rightButton) == LOW){         //Check when the button has been pressed
     if (gameState == 0){                        //On the title screen
       gameState = 1;                            //  Makes the game start
+      generatePellet();
     }
   }
 }
