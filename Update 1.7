@@ -183,7 +183,9 @@ void varUpdate(){
   gameScreen[prevCoord[0][1]][prevCoord[0][2]] = 1; //print the head
   for (int y = 0; y < 20; y++){
     if (y > snakeSize){
-      gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 0; //get rid of the old trail
+      if (prevCoord[y][1] != pelletx && prevCoord[y][2] != pellety){
+        gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 0; //get rid of the old trail
+      }
     }else{
       gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 1; //create new trail
     }
@@ -271,25 +273,24 @@ void changeDir(){
 
 void generatePellet(){
   do{
-    randomGenerate();
+    pelletx = random(8);
+    pellety = random(8);
     for (int d = 0; d < 20; d++){
       if (prevCoord[d][1] != pelletx && prevCoord[d][2] != pellety){
         pelletGood = true;
+        checkPellet();
       }else{
         pelletGood = false;
       }
     }
   } while (pelletGood == false);
-  
+}
+
+void checkPellet(){
   if (pelletGood == true){
     gameScreen[pelletx][pellety] = 1;
     generateSnake();
   }
-}
-
-void randomGenerate(){
-  pelletx = random(8);
-  pellety = random(8);
 }
 
 void pickUpPellet(){
