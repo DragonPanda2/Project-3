@@ -76,11 +76,11 @@ bool dirChangeRight = false;
 int dirChangeDelay = 200;
 int snakeDir = 1; //0 = up, 1 = right, 2 = down, 3 = left
 
-int pelletx;
-int pellety;
-bool pelletGood;
+int pelletx = -1;
+int pellety = -1;
+bool pelletGood = false;
 
-bool initPellet = true;
+bool queuePellet = true;
 
 void setup() {
   //Serial.begin(9600);
@@ -118,11 +118,7 @@ void loop() {
         printLetter(letter);                    //show the letters of SNAKE
       }else{
         if (gameState == 1) {
-          if (initPellet == true){
-            //generatePellet();
-            initPellet = false;
-          }
-          pickUpPellet();
+          //pickUpPellet();
           dirChangePress(); //buttons will make snake change direction
           generateSnake();  //snake will be printed on the game screen
           //varTest();
@@ -130,6 +126,11 @@ void loop() {
       }
     }
     if (gameState == 1){
+      pickUpPellet();
+      if (queuePellet == true){
+        generatePellet();
+        queuePellet = false;
+      }
       varUpdate();          //tail will follow him
     }
 
@@ -160,28 +161,28 @@ void checkStartGameP1(){
   if (digitalRead(leftButton) == LOW){          //Check when the button has been pressed
     if (gameState == 0){                        //On the title screen
       gameState = 1;                            //  Makes the game start
-      generatePellet();
+      //queuePellet = true;
     }
   }
   if (digitalRead(rightButton) == LOW){         //Check when the button has been pressed
     if (gameState == 0){                        //On the title screen
       gameState = 1;                            //  Makes the game start
-      generatePellet();
+      //queuePellet = true;
     }
   }
 }
 
 void varUpdate(){
-  for (int x = 0; x < 20; x++){
-    int b = 20 - x;
-    int c = 19 - x;
+  for (int x = 0; x < 40; x++){
+    int b = 40 - x;
+    int c = 39 - x;
     prevCoord[b][1] = prevCoord[c][1];      //past snake bits will follow the head
     prevCoord[b][2] = prevCoord[c][2];
   }
   prevCoord[0][1] = snakex;                 //the head goes to the next square
   prevCoord[0][2] = snakey;
   gameScreen[prevCoord[0][1]][prevCoord[0][2]] = 1; //print the head
-  for (int y = 0; y < 20; y++){
+  for (int y = 0; y < 40; y++){
     if (y > snakeSize){
       if (prevCoord[y][1] != pelletx && prevCoord[y][2] != pellety){
         gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 0; //get rid of the old trail
@@ -295,14 +296,14 @@ void checkPellet(){
 }
 
 void pickUpPellet(){
-  for (int e = 0; e < 64; e++){
-    if (prevCoord[e][1] == pelletx){
-      if (prevCoord[e][2] == pellety){
-        snakeSize++;
-        generatePellet();
-      }
+  //for (int e = 0; e < 64; e++){
+    if (prevCoord[0][1] == pelletx && prevCoord[0][2] == pellety){
+      snakeSize++;
+      gameScreen[prevCoord[snakeSize][1]][prevCoord[snakeSize][2]] = 1;
+      gameScreen[pelletx][pellety] = 0;
+      generatePellet();
     }
-  }
+  //}
 }
 /*-----------*
  *UNUSED CODE*
