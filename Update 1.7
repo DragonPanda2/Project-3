@@ -80,7 +80,7 @@ int pelletx = -1;
 int pellety = -1;
 bool pelletGood = false;
 
-bool queuePellet = true;
+bool queuePellet;// = true;
 
 void setup() {
   //Serial.begin(9600);
@@ -279,7 +279,7 @@ void generatePellet(){
   do{
     pelletx = random(8);
     pellety = random(8);
-    for (int d = 0; d < 20; d++){
+    for (int d = 0; d <= snakeSize; d++){
       if (prevCoord[d][1] != pelletx && prevCoord[d][2] != pellety){
         pelletGood = true;
         checkPellet();
