@@ -104,6 +104,8 @@ void setup() {
   }
 
   gameState = 0;                      //title screen
+
+  randomSeed(analogRead(14));         //initializes the randomizer
 }
 
 void loop() {
@@ -184,11 +186,12 @@ void varUpdate(){
   gameScreen[prevCoord[0][1]][prevCoord[0][2]] = 1; //print the head
   for (int y = 0; y < 40; y++){
     if (y > snakeSize){
-      if (prevCoord[y][1] != pelletx && prevCoord[y][2] != pellety){
+      //if (prevCoord[y][1] != pelletx && prevCoord[y][2] != pellety){
         gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 0; //get rid of the old trail
-      }
+      //}
     }else{
       gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 1; //create new trail
+      gameScreen[pelletx][pellety] = 1;
     }
   }
 }
@@ -296,14 +299,12 @@ void checkPellet(){
 }
 
 void pickUpPellet(){
-  //for (int e = 0; e < 64; e++){
-    if (prevCoord[0][1] == pelletx && prevCoord[0][2] == pellety){
-      snakeSize++;
-      gameScreen[prevCoord[snakeSize][1]][prevCoord[snakeSize][2]] = 1;
-      gameScreen[pelletx][pellety] = 0;
-      generatePellet();
-    }
-  //}
+  if (prevCoord[0][1] == pelletx && prevCoord[0][2] == pellety){
+    snakeSize++;
+    gameScreen[prevCoord[snakeSize][1]][prevCoord[snakeSize][2]] = 1;
+    gameScreen[pelletx][pellety] = 0;
+    generatePellet();
+  }
 }
 /*-----------*
  *UNUSED CODE*
