@@ -109,6 +109,7 @@ void setup() {
 }
 
 void loop() {
+if (gameState != 2){
   for (int letter = 0; letter < 5; letter++){   //change displayed letter
     if (gameState == 1){  //if the game is playing
       //varTest();
@@ -143,6 +144,9 @@ void loop() {
     //}
   }
 }
+}
+
+
 
 void printLetter(int letter) {
   for (int rows = 0; rows < 8; rows++){
