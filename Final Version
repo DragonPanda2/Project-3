@@ -1,0 +1,336 @@
+//The rows and columns of the 8x8 LED matrix
+const int row[8] = {10, 18, 9, 13, 2, 8, 3, 6};
+const int col[8] = {19, 4, 5, 11, 7, 12, 17, 16};
+
+//Letters that will form the title screen of SNAKE
+int titleScreen[5][8][8] = {
+{ 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 0, 0, 0, 1, 0, 0}, 
+{0, 0, 0, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}},
+{
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{ 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 1, 0, 0, 0}, 
+{0, 0, 1, 1, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 1, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 1, 0, 0}},
+{ 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 0, 0, 0, 0, 0}, 
+{0, 0, 1, 1, 1, 1, 0, 0}}};
+
+int leftButton = 0;
+int rightButton = 1;
+int gameState = 0;  //0 = start screen, 1 = game, 2 = game over
+
+int snakex = 3;
+int snakey = 2;   //Where (0, 0) is top left corner
+
+int prevCoord[64][2]; //64 for each coordinate, 1 for x, 2 for y
+
+int gameScreen[8][8]{ //screen for the game
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}, 
+{0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+int snakeSize = 3;  //is one bigger than this number
+bool dirChangeLeft = false; //turning left and right
+bool dirChangeRight = false;
+int dirChangeDelay = 200;
+int snakeDir = 1; //0 = up, 1 = right, 2 = down, 3 = left
+
+int pelletx = -1;
+int pellety = -1;
+bool pelletGood = false;
+
+bool queuePellet;// = true;
+
+void setup() {
+  //Serial.begin(9600);
+
+  //set up all the pins
+  for (int pin = 0; pin < 8; pin++){  //initialize LEDs
+    pinMode(row[pin], OUTPUT);
+    pinMode(col[pin], OUTPUT);
+
+    //turn all LEDs off
+    digitalWrite(row[pin], LOW);
+    digitalWrite(col[pin], LOW);
+  }
+
+  pinMode(leftButton, INPUT_PULLUP);  //initialize the two buttons
+  pinMode(rightButton, INPUT_PULLUP);
+
+  for (int a; a < 64; a++){           //set the trail to nothing
+    prevCoord[a][1] = -1;
+    prevCoord[a][2] = -1;
+  }
+
+  gameState = 0;                      //title screen
+
+  randomSeed(analogRead(14));         //initializes the randomizer
+}
+
+void loop() {
+if (gameState != 2){
+  for (int letter = 0; letter < 5; letter++){   //change displayed letter
+    if (gameState == 1){  //if the game is playing
+      //varTest();
+      changeDir();        //player can change direction
+      snakeMovement();    //snake can move
+    }
+    for (int refreshRate = 0; refreshRate < 200; refreshRate++){  //refresh the game every 200 milliseconds
+      if (gameState == 0) {                     //if on the title screen
+        printLetter(letter);                    //show the letters of SNAKE
+      }else{
+        if (gameState == 1) {
+          //pickUpPellet();
+          dirChangePress(); //buttons will make snake change direction
+          generateSnake();  //snake will be printed on the game screen
+          //varTest();
+        }
+      }
+    }
+    if (gameState == 1){
+      pickUpPellet();
+      if (queuePellet == true){
+        generatePellet();
+        queuePellet = false;
+      }
+      varUpdate();          //tail will follow him
+    }
+
+    //while(!Serial);
+    //for (int x = 0; x < 10; x++){
+      //Serial.println(prevCoord[x][1]);
+      //Serial.println(prevCoord[x][2]);
+    //}
+  }
+}
+}
+
+
+
+void printLetter(int letter) {
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      if (gameState == 0){                      //if the game hasn't started
+        digitalWrite(row[rows], HIGH);          //show the letters
+        digitalWrite(col[cols], !(titleScreen[letter][rows][cols]));
+        digitalWrite(row[rows], LOW);
+        digitalWrite(col[cols], HIGH);
+
+        checkStartGameP1();                     //see if the button has been pressed
+      }
+    }
+  }
+}
+
+void checkStartGameP1(){
+  if (digitalRead(leftButton) == LOW){          //Check when the button has been pressed
+    if (gameState == 0){                        //On the title screen
+      gameState = 1;                            //  Makes the game start
+      //queuePellet = true;
+    }
+  }
+  if (digitalRead(rightButton) == LOW){         //Check when the button has been pressed
+    if (gameState == 0){                        //On the title screen
+      gameState = 1;                            //  Makes the game start
+      //queuePellet = true;
+    }
+  }
+}
+
+void varUpdate(){
+  for (int x = 0; x < 40; x++){
+    int b = 40 - x;
+    int c = 39 - x;
+    prevCoord[b][1] = prevCoord[c][1];      //past snake bits will follow the head
+    prevCoord[b][2] = prevCoord[c][2];
+  }
+  prevCoord[0][1] = snakex;                 //the head goes to the next square
+  prevCoord[0][2] = snakey;
+  gameScreen[prevCoord[0][1]][prevCoord[0][2]] = 1; //print the head
+  for (int h = 0; h < snakeSize; h++){
+    gameScreen[prevCoord[h][1]][prevCoord[h][2]] = 1;
+  }
+  for (int y = 0; y < 40; y++){
+    
+    if (y > snakeSize){
+      //if (prevCoord[y][1] != pelletx && prevCoord[y][2] != pellety){
+        gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 0; //get rid of the old trail
+        //gameScreen[prevCoord[y + 1][1]][prevCoord[y + 1][2]] = 1;
+      //}
+    }else{
+      gameScreen[prevCoord[y][1]][prevCoord[y][2]] = 1; //create new trail
+      gameScreen[pelletx][pellety] = 1;
+    }
+  }
+  for (int h = 0; h < snakeSize; h++){
+    gameScreen[prevCoord[h][1]][prevCoord[h][2]] = 1;
+  }
+}
+
+void generateSnake(){   //print all LEDs that are supposed to be lit up
+  
+  for (int rows = 0; rows < 8; rows++){
+    for (int cols = 0; cols < 8; cols++){
+      digitalWrite(row[rows], HIGH);
+      digitalWrite(col[cols], !(gameScreen[rows][cols]));
+      digitalWrite(row[rows], LOW);
+      digitalWrite(col[cols], HIGH);
+    }
+  }
+}
+
+void snakeMovement(){
+  if (snakeDir == 0){ //if the snake is going up
+    if (snakex >= 0){
+      snakex--;
+    }else{
+      gameState = 2;  //if he hits the wall, it's game over
+    }
+  }
+  if (snakeDir == 1){ //if the snake is going right
+    if (snakey < 8){
+      snakey++;
+    }else{
+      gameState = 2;
+    }
+  }
+  if (snakeDir == 2){ //if the snake is going down
+    if (snakex < 8){
+      snakex++;
+    }else{
+      gameState = 2;
+    }
+  }
+  if (snakeDir == 3){ //if the snake is going left
+    if (snakey >= 0){
+      snakey--;
+    }else{
+      gameState = 2;
+    }
+  }
+}
+
+void dirChangePress(){
+  if (dirChangeDelay < 1){  //delay so that turns can not be queued
+    if (digitalRead(rightButton) == LOW){ //turn to the right
+      dirChangeRight = true;
+      dirChangeLeft = false;
+      dirChangeDelay = 200; //start delay
+    }
+    if (digitalRead(leftButton) == LOW){  //turn to the left
+      dirChangeLeft = true;
+      dirChangeRight = false;
+      dirChangeDelay = 200;
+    }
+  }else{
+    dirChangeDelay--;     //shorten the delay
+  }
+}
+
+void changeDir(){
+    if (dirChangeRight == true){
+      if (snakeDir < 3){  //change direction to the right
+        snakeDir++;
+      }else{
+        snakeDir = 0;
+      }
+      dirChangeRight = false;
+    }
+    if (dirChangeLeft == true){
+      if (snakeDir > 0){  //change direction to the left
+        snakeDir--;
+      }else{
+      snakeDir = 3;
+      }
+      dirChangeLeft = false;
+    }
+}
+
+void generatePellet(){
+  do{
+    pelletx = random(8);    //spawn a pellet at a random coordinate
+    pellety = random(8);
+    for (int d = 0; d <= snakeSize; d++){
+      if (prevCoord[d][1] != pelletx && prevCoord[d][2] != pellety){  //as long as it's not in the snake
+        pelletGood = true;
+        checkPellet();
+        break;
+      }else{
+        pelletGood = false;
+      }
+    }
+  } while (pelletGood == false);
+}
+
+void checkPellet(){
+  if (pelletGood == true){
+    gameScreen[pelletx][pellety] = 1;   //if the pellet is in a valid location, print it
+    generateSnake();
+  }
+}
+
+void pickUpPellet(){
+  if (prevCoord[0][1] == pelletx && prevCoord[0][2] == pellety){      //when the snake head is on the pellet, pick it up
+    snakeSize++;
+    gameScreen[prevCoord[snakeSize][1]][prevCoord[snakeSize][2]] = 1;
+    gameScreen[pelletx][pellety] = 0;
+    generatePellet();                                                 //spawn another pellet
+  }
+}
+/*-----------*
+ *UNUSED CODE*
+ *-----------*/
+
+void varTest(){
+  if (snakex < 7){
+    snakex++;
+  }else{
+    snakex = 0;
+    if (snakey < 7){
+      snakey++;
+    }else{
+      snakey = 0;
+    }
+  }
+}
